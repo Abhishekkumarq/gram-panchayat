@@ -16,7 +16,7 @@ const STAT_CARDS = (stats, citizens, households, birthCerts, deathCerts, grievan
   { label: 'Birth Certificates',   val: fmt(stats.birthCerts  || birthCerts.length),                                        tab: 'birth' },
   { label: 'Death Certificates',   val: fmt(stats.deathCerts  || deathCerts.length),                                        tab: 'death' },
   { label: 'Grievances',           val: fmt(stats.complaints  || grievances.length),                                        tab: 'grievances' },
-  { label: 'Tax Revenue (Rs.)',     val: 'Rs.' + fmt(stats.taxRevenue || allTaxes.reduce((s, t) => s + t.amount, 0)),       tab: 'taxes' },
+  { label: 'Tax Revenue',           val: '₹' + fmt(stats.taxRevenue || allTaxes.reduce((s, t) => s + t.amount, 0)),        tab: 'taxes' },
   { label: 'Fund Records',         val: fmt(stats.funds       || allFunds.length),                                          tab: 'funds' },
   { label: 'Schemes',              val: fmt(stats.schemes     || allSchemes.length),                                        tab: 'schemes' },
   { label: 'Applications',         val: fmt(stats.applications|| allApps.length),                                           tab: 'applications' },
@@ -272,7 +272,7 @@ function AdminDashboard() {
                 <thead>
                   <tr>
                     <th>#</th><th>Name</th><th>Email</th><th>Phone</th>
-                    <th>Ward</th><th>Income (Rs.)</th><th>Address</th>
+                    <th>Ward</th><th>Income (₹)</th><th>Address</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -283,7 +283,7 @@ function AdminDashboard() {
                       <td style={{ fontSize: 12 }}>{c.email}</td>
                       <td>{c.phone}</td>
                       <td style={{ textAlign: 'center' }}>{c.ward}</td>
-                      <td style={{ textAlign: 'right' }}>Rs.{fmt(c.income)}</td>
+                      <td style={{ textAlign: 'right' }}>₹{fmt(c.income)}</td>
                       <td style={{ fontSize: 12 }}>{c.address}</td>
                     </tr>
                   ))}
@@ -410,7 +410,7 @@ function AdminDashboard() {
                 <thead>
                   <tr>
                     <th>Taxpayer</th><th>Type</th><th>Year</th>
-                    <th>Amount Due (Rs.)</th><th>Paid (Rs.)</th><th>Status</th><th>Receipt</th><th>Paid On</th>
+                    <th>Amount Due (₹)</th><th>Paid (₹)</th><th>Status</th><th>Receipt</th><th>Paid On</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -419,8 +419,8 @@ function AdminDashboard() {
                       <td>{tax.userId?.name}</td>
                       <td><span className="badge">{tax.taxType}</span></td>
                       <td>{tax.year}</td>
-                      <td style={{ textAlign: 'right' }}>Rs.{fmt(tax.amount)}</td>
-                      <td style={{ textAlign: 'right' }}>Rs.{fmt(tax.propertyDetails?.amountPaid)}</td>
+                      <td style={{ textAlign: 'right' }}>₹{fmt(tax.amount)}</td>
+                      <td style={{ textAlign: 'right' }}>₹{fmt(tax.propertyDetails?.amountPaid)}</td>
                       <td><span className={`status ${tax.status}`}>{tax.status}</span></td>
                       <td style={{ fontSize: 12 }}>{tax.receiptNumber || '—'}</td>
                       <td style={{ fontSize: 12 }}>{tax.paymentDate ? new Date(tax.paymentDate).toLocaleDateString('en-IN') : '—'}</td>
@@ -441,7 +441,7 @@ function AdminDashboard() {
                 <thead>
                   <tr>
                     <th>Ward</th><th>Year</th><th>Department</th>
-                    <th>Allocated (Rs.)</th><th>Used (Rs.)</th><th>Balance (Rs.)</th><th>% Used</th>
+                    <th>Allocated (₹)</th><th>Used (₹)</th><th>Balance (₹)</th><th>% Used</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -452,9 +452,9 @@ function AdminDashboard() {
                         <td style={{ textAlign: 'center' }}>{f.ward}</td>
                         <td style={{ textAlign: 'center' }}>{f.year}</td>
                         <td>{f.description}</td>
-                        <td style={{ textAlign: 'right' }}>Rs.{fmt(f.allocated)}</td>
-                        <td style={{ textAlign: 'right' }}>Rs.{fmt(f.spent)}</td>
-                        <td style={{ textAlign: 'right' }}>Rs.{fmt(f.allocated - f.spent)}</td>
+                        <td style={{ textAlign: 'right' }}>₹{fmt(f.allocated)}</td>
+                        <td style={{ textAlign: 'right' }}>₹{fmt(f.spent)}</td>
+                        <td style={{ textAlign: 'right' }}>₹{fmt(f.allocated - f.spent)}</td>
                         <td>
                           <div style={{ background: '#E8EFF8', borderRadius: 3, height: 14, width: 80, position: 'relative' }}>
                             <div style={{ background: pct > 90 ? '#CC0000' : '#138808', borderRadius: 3, height: '100%', width: `${Math.min(pct, 100)}%` }} />
@@ -631,7 +631,7 @@ function AdminDashboard() {
                 <thead>
                   <tr>
                     <th>#</th><th>Owner</th><th>Ward</th><th>Land Type</th>
-                    <th>Area (acres)</th><th>Rate/acre (Rs.)</th><th>Estimated Value (Rs.)</th>
+                    <th>Area (acres)</th><th>Rate/acre (₹)</th><th>Estimated Value (₹)</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -642,8 +642,8 @@ function AdminDashboard() {
                       <td style={{ textAlign: 'center' }}>{p.wardNumber}</td>
                       <td>{p.landType}</td>
                       <td style={{ textAlign: 'right' }}>{p.landAreaAcres}</td>
-                      <td style={{ textAlign: 'right' }}>Rs.{fmt(p.pricePerAcre)}</td>
-                      <td style={{ textAlign: 'right' }}>Rs.{fmt(p.estimatedValue)}</td>
+                      <td style={{ textAlign: 'right' }}>₹{fmt(p.pricePerAcre)}</td>
+                      <td style={{ textAlign: 'right' }}>₹{fmt(p.estimatedValue)}</td>
                     </tr>
                   ))}
                 </tbody>

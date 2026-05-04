@@ -1,0 +1,410 @@
+/* =====================================================
+   MODERN HEADER — Indian Government Portal Style
+   ===================================================== */
+
+:root {
+  --gov-navy: #003087;
+  --gov-navy-dark: #00205A;
+  --gov-saffron: #FF6600;
+  --gov-green: #138808;
+  --gov-white: #FFFFFF;
+  --gov-light: #EEF2F7;
+  --gov-border: #CCCCCC;
+  --gov-border-light: #E0E0E0;
+  --gov-text: #1A1A1A;
+  --gov-text-light: #666666;
+  --transition-fast: 0.18s ease;
+}
+
+.mh-wrapper {
+  position: sticky;
+  top: 0;
+  z-index: 900;
+  width: 100%;
+}
+
+/* utility bar removed */
+
+/* ===== MAIN HEADER ===== */
+.mh-header {
+  background: var(--gov-white);
+  box-shadow: 0 2px 6px rgba(0, 48, 135, 0.1);
+}
+
+.mh-header-inner {
+  width: 100%;
+  padding: 0.75rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+/* ---- Branding ---- */
+.mh-brand-area {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+}
+
+.mh-mobile-toggle {
+  display: none;
+  background: transparent;
+  border: 1px solid var(--gov-border);
+  color: var(--gov-text);
+  padding: 0.4rem;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  transform: none !important;
+  box-shadow: none !important;
+}
+.mh-mobile-toggle:hover { background: var(--gov-light); }
+
+.mh-brand-link {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  text-decoration: none;
+}
+.mh-brand-link:hover { text-decoration: none; }
+
+.mh-emblem {
+  width: 55px;
+  height: 55px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.mh-brand-text { display: flex; flex-direction: column; gap: 0.05rem; }
+
+.mh-brand-hindi {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--gov-navy);
+  font-family: 'Noto Sans Devanagari', 'Noto Sans', sans-serif;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.mh-brand-title {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--gov-navy);
+  margin: 0;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.mh-brand-sub {
+  font-size: 0.68rem;
+  color: var(--gov-text-light);
+  margin: 0;
+  letter-spacing: 0.2px;
+}
+
+/* ---- Actions ---- */
+.mh-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+  margin-left: auto;
+  padding-right: 0.5rem;
+}
+
+.mh-action-wrap { position: relative; }
+
+/* Globe icon button — clean, no box */
+.mh-icon-btn {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  color: #555;
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease;
+  transform: none !important;
+  box-shadow: none !important;
+}
+.mh-icon-btn:hover {
+  background: var(--gov-light);
+  color: var(--gov-navy);
+}
+
+/* Notification bell wrapper alignment */
+.mh-notif-wrap {
+  display: flex;
+  align-items: center;
+}
+
+/* Thin vertical divider between bell and profile */
+.mh-action-divider {
+  width: 1px;
+  height: 22px;
+  background: #D0D8E8;
+  margin: 0 0.25rem;
+}
+
+/* Profile button — avatar + name stack + chevron */
+.mh-profile-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.3rem 0.5rem 0.3rem 0.3rem;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--gov-text);
+  transition: background 0.18s ease, border-color 0.18s ease;
+  transform: none !important;
+  box-shadow: none !important;
+}
+.mh-profile-btn:hover {
+  background: var(--gov-light);
+  border-color: var(--gov-border);
+}
+
+.mh-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--gov-navy);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+.mh-profile-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.2;
+}
+
+.mh-profile-name-sm {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #1A1A1A;
+}
+
+.mh-profile-role-sm {
+  font-size: 0.68rem;
+  color: #888;
+  font-weight: 400;
+}
+
+/* ---- Dropdown ---- */
+.mh-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: white;
+  border: 1px solid var(--gov-border);
+  border-radius: 6px;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.14), 0 2px 8px rgba(0,0,0,0.08);
+  min-width: 160px;
+  z-index: 1001;
+  overflow: hidden;
+  animation: dropdownSlide 0.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+  transform-origin: top right;
+}
+@keyframes dropdownSlide {
+  from { opacity: 0; transform: scale(0.9) translateY(-8px); }
+  to   { opacity: 1; transform: scale(1)   translateY(0); }
+}
+
+.mh-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.55rem 0.875rem;
+  background: transparent;
+  border: none;
+  color: var(--gov-text);
+  font-size: 0.82rem;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s ease, padding-left 0.15s ease, color 0.15s ease;
+  border-bottom: 1px solid var(--gov-border-light);
+  transform: none !important;
+  box-shadow: none !important;
+}
+.mh-dropdown-item:last-child { border-bottom: none; }
+.mh-dropdown-item:hover { background: var(--gov-light); color: var(--gov-navy); padding-left: 1.1rem; }
+.mh-dropdown-item.active { background: var(--gov-light); color: var(--gov-navy); font-weight: 600; }
+
+/* ---- Profile Dropdown ---- */
+.mh-profile-dropdown { min-width: 210px; }
+
+.mh-profile-head {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 0.875rem;
+  background: var(--gov-light);
+  border-bottom: 1px solid var(--gov-border);
+}
+
+.mh-avatar-lg {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--gov-navy);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.95rem;
+  flex-shrink: 0;
+}
+
+.mh-profile-name { font-weight: 700; font-size: 0.85rem; color: var(--gov-text); margin: 0; }
+.mh-profile-role { font-size: 0.7rem; color: var(--gov-navy); font-weight: 600; margin: 0; }
+
+.mh-profile-body { padding: 0.25rem 0; }
+.mh-profile-footer { border-top: 1px solid var(--gov-border); }
+
+.mh-logout-item { color: #CC0000 !important; }
+.mh-logout-item:hover { background: #FFF0F0 !important; color: #AA0000 !important; }
+
+/* ---- Tricolor ---- */
+.mh-tricolor { display: none; }
+
+/* ===== NAVIGATION BAR ===== */
+.mh-navbar {
+  background: var(--gov-navy);
+  border-bottom: none;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.18);
+}
+
+.mh-navbar-inner {
+  width: 100%;
+  padding: 0 2rem;
+}
+
+.mh-nav-links {
+  display: flex;
+  align-items: stretch;
+}
+
+.mh-nav-link {
+  display: flex;
+  align-items: center;
+  padding: 0.7rem 0.95rem;
+  color: rgba(255,255,255,0.82);
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 500;
+  white-space: nowrap;
+  border-bottom: 3px solid transparent;
+  transition: color 0.18s ease, background 0.18s ease, border-color 0.18s ease;
+  margin-bottom: -3px;
+  position: relative;
+}
+/* Underline slide-in on hover */
+.mh-nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 50%;
+  width: 0; height: 3px;
+  background: var(--gov-saffron);
+  transition: width 0.22s ease, left 0.22s ease;
+}
+.mh-nav-link:hover::after,
+.mh-nav-link.active::after {
+  width: 100%; left: 0;
+}
+.mh-nav-link:hover {
+  color: white;
+  background: rgba(255,255,255,0.07);
+  border-bottom-color: transparent;
+  text-decoration: none;
+}
+.mh-nav-link.active {
+  color: white;
+  background: rgba(255,255,255,0.1);
+  border-bottom-color: transparent;
+  font-weight: 600;
+}
+
+.mh-admin-link { background: rgba(255,100,0,0.12); color: #FFB366; }
+.mh-admin-link:hover, .mh-admin-link.active {
+  background: rgba(255,100,0,0.22);
+  color: #FFCC88;
+  border-bottom-color: #FFB366;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 1024px) {
+  .mh-brand-title { font-size: 1.05rem; }
+  .mh-nav-link { padding: 0.7rem 0.75rem; font-size: 0.82rem; }
+}
+
+@media (max-width: 768px) {
+  .mh-mobile-toggle { display: flex; }
+
+  .mh-brand-title { font-size: 0.95rem; white-space: normal; }
+  .mh-brand-sub { display: none; }
+  .mh-emblem { width: 44px; height: 44px; }
+
+  .mh-username { display: none; }
+
+  .mh-nav-links {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    background: var(--gov-navy-dark);
+    border-top: 2px solid var(--gov-saffron);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    z-index: 800;
+  }
+  .mh-nav-links.mh-nav-open { display: flex; }
+
+  .mh-nav-link {
+    padding: 0.875rem 1.25rem;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    border-left: none;
+    font-size: 0.875rem;
+    justify-content: flex-start;
+    width: 100%;
+  }
+  .mh-nav-link:last-child { border-bottom: none; }
+  .mh-nav-link:hover, .mh-nav-link.active {
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    border-left: 3px solid var(--gov-saffron);
+    padding-left: calc(1.25rem - 3px);
+  }
+
+  .mh-profile-info { display: none; }
+}
+
+@media (max-width: 480px) {
+  .mh-header-inner { padding: 0.625rem 0.875rem; gap: 0.75rem; }
+  .mh-emblem { width: 38px; height: 38px; }
+  .mh-brand-hindi { font-size: 0.8rem; }
+  .mh-brand-title { font-size: 0.875rem; }
+  .mh-actions { gap: 0.4rem; }
+}
+
+/* ===== PRINT ===== */
+@media print {
+  .mh-wrapper { position: static; }
+  .mh-utility-bar, .mh-navbar, .mh-actions { display: none; }
+  .mh-header { box-shadow: none; }
+}

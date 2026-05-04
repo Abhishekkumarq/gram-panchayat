@@ -1,0 +1,411 @@
+/* =====================================================
+   MY APPLICATIONS — Indian Government Portal Style
+   Navy #003087 | Saffron #FF6600 | Green #138808
+   ===================================================== */
+
+.gp-page {
+  min-height: 100vh;
+  background: #F0F4FA;
+  font-family: 'Noto Sans', 'Segoe UI', Arial, sans-serif;
+}
+
+/* ── Page Header ── */
+.gp-page-header {
+  background: linear-gradient(135deg, #0D1B3E 0%, #003087 100%);
+  color: white;
+  padding: 1.75rem 2rem;
+  border-bottom: 4px solid #FF6600;
+}
+
+.gp-page-header-inner {
+  max-width: 1000px;
+  margin: 0 auto;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.gp-page-breadcrumb {
+  font-size: 0.78rem;
+  color: rgba(255,255,255,0.6);
+  margin: 0 0 0.4rem;
+}
+
+.gp-page-breadcrumb a {
+  color: rgba(255,255,255,0.75);
+  text-decoration: none;
+}
+
+.gp-page-breadcrumb a:hover { color: #FF6600; }
+
+.gp-page-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0 0 0.3rem;
+  letter-spacing: 0.2px;
+}
+
+.gp-page-subtitle {
+  font-size: 0.82rem;
+  color: rgba(255,255,255,0.65);
+  margin: 0;
+}
+
+.gp-header-counts {
+  display: flex;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.gp-count-pill {
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 6px;
+  padding: 0.5rem 0.875rem;
+  text-align: center;
+  min-width: 64px;
+}
+
+.gp-count-pill.approved { border-color: #138808; background: rgba(19,136,8,0.15); }
+.gp-count-pill.pending  { border-color: #FF6600; background: rgba(255,102,0,0.15); }
+
+.gp-count-num {
+  display: block;
+  font-size: 1.3rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.gp-count-lbl {
+  display: block;
+  font-size: 0.68rem;
+  color: rgba(255,255,255,0.7);
+  margin-top: 0.2rem;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+/* ── Body ── */
+.gp-page-body {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 1.5rem 1.5rem 3rem;
+}
+
+/* ── Filters ── */
+.gp-filters {
+  background: white;
+  border: 1px solid #D0D8E8;
+  border-radius: 4px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 1px 4px rgba(0,48,135,0.06);
+}
+
+.gp-search {
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  border: 1px solid #CCCCCC;
+  border-radius: 3px;
+  font-size: 0.875rem;
+  margin-bottom: 0.75rem;
+  font-family: inherit;
+  color: #1A1A1A;
+  box-sizing: border-box;
+}
+
+.gp-search:focus {
+  outline: none;
+  border-color: #003087;
+  box-shadow: 0 0 0 2px rgba(0,48,135,0.1);
+}
+
+.gp-filter-row {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.gp-filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 160px;
+}
+
+.gp-filter-group label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #555;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.gp-filter-group select {
+  padding: 0.45rem 0.75rem;
+  border: 1px solid #CCCCCC;
+  border-radius: 3px;
+  font-size: 0.875rem;
+  font-family: inherit;
+  color: #1A1A1A;
+  background: white;
+  cursor: pointer;
+}
+
+.gp-filter-group select:focus {
+  outline: none;
+  border-color: #003087;
+}
+
+.gp-result-count {
+  font-size: 0.8rem;
+  color: #666;
+  margin: 0 0 1rem;
+}
+
+/* ── Loading / Empty ── */
+.gp-loading {
+  text-align: center;
+  padding: 3rem;
+  color: #003087;
+  font-size: 0.9rem;
+  background: white;
+  border-radius: 4px;
+  border: 1px solid #D0D8E8;
+}
+
+.gp-empty {
+  text-align: center;
+  padding: 3.5rem 2rem;
+  background: white;
+  border: 1px solid #D0D8E8;
+  border-radius: 4px;
+}
+
+.gp-empty-icon {
+  font-size: 2.5rem;
+  color: #CCCCCC;
+  margin-bottom: 0.75rem;
+}
+
+.gp-empty h3 {
+  font-size: 1.1rem;
+  color: #333;
+  margin: 0 0 0.4rem;
+}
+
+.gp-empty p {
+  font-size: 0.85rem;
+  color: #777;
+  margin: 0 0 1.25rem;
+}
+
+.gp-empty-link {
+  display: inline-block;
+  background: #003087;
+  color: white;
+  padding: 0.55rem 1.25rem;
+  border-radius: 3px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.15s;
+}
+
+.gp-empty-link:hover { background: #00205A; }
+
+/* ── Application Cards ── */
+.gp-app-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.gp-app-card {
+  background: white;
+  border: 1px solid #D0D8E8;
+  border-left: 4px solid #003087;
+  border-radius: 4px;
+  padding: 1.25rem 1.5rem;
+  box-shadow: 0 1px 6px rgba(0,48,135,0.07);
+  transition: box-shadow 0.15s;
+}
+
+.gp-app-card:hover {
+  box-shadow: 0 4px 14px rgba(0,48,135,0.12);
+}
+
+.gp-card-rejected { border-left-color: #CC0000; }
+
+/* Card top row */
+.gp-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.1rem;
+}
+
+.gp-card-left {
+  flex: 1;
+}
+
+.gp-type-badge {
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 0.2rem 0.55rem;
+  border-radius: 2px;
+  margin-bottom: 0.4rem;
+}
+
+.type-cert   { background: #E8F0FE; color: #003087; }
+.type-scheme { background: #FFF3E0; color: #E65100; }
+
+.gp-card-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1A1A1A;
+  margin: 0 0 0.25rem;
+}
+
+.gp-card-ref {
+  font-size: 0.78rem;
+  color: #666;
+  margin: 0;
+}
+
+/* Status badge */
+.gp-status-badge {
+  flex-shrink: 0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.3rem 0.75rem;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.st-approved   { background: #EBF7EB; color: #138808; border: 1px solid #138808; }
+.st-rejected   { background: #FDEAEA; color: #CC0000; border: 1px solid #CC0000; }
+.st-pending    { background: #FFF8E1; color: #E65100; border: 1px solid #FF6600; }
+.st-processing { background: #E8F0FE; color: #003087; border: 1px solid #003087; }
+.st-review     { background: #F3E5F5; color: #6A1B9A; border: 1px solid #9C27B0; }
+
+/* Progress tracker */
+.gp-tracker {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1.1rem;
+  padding: 0.875rem 1rem;
+  background: #F7F9FC;
+  border: 1px solid #E4EAF2;
+  border-radius: 3px;
+  overflow-x: auto;
+}
+
+.gp-tracker-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  flex-shrink: 0;
+}
+
+.gp-step-dot {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid #CCCCCC;
+  background: white;
+  color: #CCCCCC;
+  font-size: 0.7rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gp-tracker-step.gp-step-done .gp-step-dot {
+  background: #003087;
+  border-color: #003087;
+  color: white;
+}
+
+.gp-tracker-step.gp-step-rejected .gp-step-dot {
+  background: #CC0000;
+  border-color: #CC0000;
+  color: white;
+}
+
+.gp-step-label {
+  font-size: 0.65rem;
+  color: #888;
+  text-align: center;
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+.gp-tracker-step.gp-step-done .gp-step-label { color: #003087; font-weight: 600; }
+.gp-tracker-step.gp-step-rejected .gp-step-label { color: #CC0000; font-weight: 600; }
+
+.gp-tracker-line {
+  flex: 1;
+  height: 2px;
+  background: #CCCCCC;
+  margin: 0 0.25rem;
+  margin-bottom: 1rem;
+  min-width: 20px;
+}
+
+.gp-tracker-line.gp-line-done { background: #003087; }
+
+/* Meta row */
+.gp-card-meta {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  padding-top: 0.875rem;
+  border-top: 1px solid #EEF2F7;
+}
+
+.gp-meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.gp-meta-label {
+  font-size: 0.68rem;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  font-weight: 600;
+}
+
+.gp-meta-value {
+  font-size: 0.85rem;
+  color: #1A1A1A;
+  font-weight: 500;
+}
+
+.gp-meta-remarks .gp-meta-value {
+  color: #555;
+  font-style: italic;
+}
+
+/* ── Responsive ── */
+@media (max-width: 600px) {
+  .gp-page-header { padding: 1.25rem 1rem; }
+  .gp-page-body   { padding: 1rem 0.875rem 2rem; }
+  .gp-page-header-inner { flex-direction: column; gap: 1rem; }
+  .gp-header-counts { justify-content: flex-start; }
+  .gp-app-card { padding: 1rem; }
+  .gp-card-top { flex-direction: column; gap: 0.5rem; }
+  .gp-filter-row { flex-direction: column; }
+  .gp-filter-group { min-width: 100%; }
+}

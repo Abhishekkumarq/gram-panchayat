@@ -28,11 +28,7 @@ function Login({ setUser }) {
 
   const handleAdminLogin = () => {
     setShowAdminLogin(!showAdminLogin);
-    if (!showAdminLogin) {
-      setFormData({ email: 'abhishek@02', password: 'abhi1234' });
-    } else {
-      setFormData({ email: '', password: '' });
-    }
+    setFormData({ email: '', password: '' });
   };
 
   return (

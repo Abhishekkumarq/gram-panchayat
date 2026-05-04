@@ -20,6 +20,10 @@ router.get('/summary', authenticate, async (req, res) => {
         db.collection('properties').find({}).toArray(),
       ]);
 
+    // Normalize status to lowercase for consistent comparison
+    schemes.forEach(s => { if (s.status) s.status = s.status.toLowerCase(); });
+    grievances.forEach(g => { if (g.status) g.status = g.status.toLowerCase(); });
+
     // ── KPIs ──
     const taxCollected = taxes
       .filter(t => t.payment_status === 'Paid')
@@ -27,8 +31,8 @@ router.get('/summary', authenticate, async (req, res) => {
     const taxPending = taxes
       .filter(t => t.payment_status === 'Pending')
       .reduce((s, t) => s + parseFloat(t.amount_due || 0), 0);
-    const openGrievances  = grievances.filter(g => g.status === 'Pending').length;
-    const approvedSchemes = schemes.filter(s => s.status === 'Approved').length;
+    const openGrievances  = grievances.filter(g => g.status === 'pending').length;
+    const approvedSchemes = schemes.filter(s => s.status === 'approved').length;
 
     // ── Gender distribution ──
     const genderMap = {};
@@ -53,8 +57,8 @@ router.get('/summary', authenticate, async (req, res) => {
     const grievMap = {};
     grievances.forEach(g => {
       const key = g.complaint_category || g.category || 'Other';
-      if (!grievMap[key]) grievMap[key] = { category: key, Pending: 0, 'In Progress': 0, Resolved: 0, Rejected: 0 };
-      const st = g.status || 'Pending';
+      if (!grievMap[key]) grievMap[key] = { category: key, pending: 0, 'in progress': 0, resolved: 0, rejected: 0 };
+      const st = (g.status || 'pending').toLowerCase();
       grievMap[key][st] = (grievMap[key][st] || 0) + 1;
     });
     const grievData = Object.values(grievMap);
@@ -62,7 +66,7 @@ router.get('/summary', authenticate, async (req, res) => {
     // ── Grievance priority ──
     const priorityMap = {};
     grievances.forEach(g => {
-      const p = g.priority || 'Medium';
+      const p = (g.priority || 'medium').toLowerCase();
       priorityMap[p] = (priorityMap[p] || 0) + 1;
     });
     const priorityData = Object.entries(priorityMap).map(([name, value]) => ({ name, value }));
@@ -81,8 +85,8 @@ router.get('/summary', authenticate, async (req, res) => {
     const schemeMap = {};
     schemes.forEach(s => {
       const key = s.scheme_category || s.schemeId || 'Other';
-      if (!schemeMap[key]) schemeMap[key] = { category: key, Approved: 0, Pending: 0, Rejected: 0, 'Under Review': 0 };
-      const st = s.status || 'Pending';
+      if (!schemeMap[key]) schemeMap[key] = { category: key, approved: 0, pending: 0, rejected: 0, submitted: 0 };
+      const st = (s.status || 'pending').toLowerCase();
       schemeMap[key][st] = (schemeMap[key][st] || 0) + 1;
     });
     const schemeData = Object.values(schemeMap);

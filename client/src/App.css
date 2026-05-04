@@ -17,11 +17,11 @@ html { scroll-behavior: smooth; }
 #main-content { animation: fadeInUp 0.38s ease both; }
 
 /* ── Global button micro-interactions ── */
-button:not(:disabled):not(.gm-fab) {
+button:not(:disabled):not(.gm-fab):not(.eye-btn) {
   position: relative;
   overflow: hidden;
 }
-button:not(:disabled):not(.gm-fab)::after {
+button:not(:disabled):not(.gm-fab):not(.eye-btn)::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -30,10 +30,10 @@ button:not(:disabled):not(.gm-fab)::after {
   border-radius: inherit;
   pointer-events: none;
 }
-button:not(:disabled):not(.gm-fab):active::after {
+button:not(:disabled):not(.gm-fab):not(.eye-btn):active::after {
   background: rgba(255,255,255,0.15);
 }
-button:not(:disabled):not(.gm-fab):active {
+button:not(:disabled):not(.gm-fab):not(.eye-btn):active {
   transform: scale(0.98) !important;
   transition: transform 0.1s ease !important;
 }

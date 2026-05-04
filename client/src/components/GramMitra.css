@@ -5,7 +5,7 @@
 
 /* ── Floating action button ── */
 .gm-fab {
-  position: fixed;
+  position: fixed !important;
   bottom: 2rem;
   right: 2rem;
   width: 54px;

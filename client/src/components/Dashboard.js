@@ -4,9 +4,10 @@ import { useLanguage } from '../LanguageContext';
 import {
   FiFileText, FiDollarSign, FiAlertCircle, FiSettings,
   FiTrendingUp, FiUsers, FiArrowRight, FiChevronDown,
-  FiLogOut, FiGlobe, FiClipboard, FiFolder, FiMenu, FiX, FiUser, FiShield
+  FiLogOut, FiGlobe, FiClipboard, FiFolder, FiMenu, FiX, FiUser, FiShield, FiEdit2, FiSave
 } from 'react-icons/fi';
 import Notifications from './Notifications';
+import { auth } from '../api';
 import './Dashboard.css';
 
 function Dashboard({ user, setUser }) {
@@ -18,6 +19,17 @@ function Dashboard({ user, setUser }) {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [fontSize, setFontSize] = useState('normal');
   const { language, setLanguage, t, languages } = useLanguage();
+
+  // Profile editor state
+  const [showProfileEditor, setShowProfileEditor] = useState(false);
+  const [profileForm, setProfileForm] = useState({
+    name: '', phone: '', email: '', address: '', ward: '',
+    aadhar: '', income: '', category: '', landHolding: '', familySize: '', occupation: ''
+  });
+  const [profileLoading, setProfileLoading] = useState(false);
+  const [profileSaving, setProfileSaving] = useState(false);
+  const [profileError, setProfileError] = useState('');
+  const [profileSuccess, setProfileSuccess] = useState('');
 
   const slides = [
     {
@@ -103,6 +115,53 @@ function Dashboard({ user, setUser }) {
 
   const isActive = (path) => location.pathname === path;
 
+  const openProfileEditor = async () => {
+    setShowProfileMenu(false);
+    setProfileError('');
+    setProfileSuccess('');
+    setShowProfileEditor(true);
+    setProfileLoading(true);
+    try {
+      const { data } = await auth.getProfile();
+      setProfileForm({
+        name:        data.name        || '',
+        phone:       data.phone       || '',
+        email:       data.email       || '',
+        address:     data.address     || '',
+        ward:        data.ward        || '',
+        aadhar:      data.aadhar      || '',
+        income:      data.income      || '',
+        category:    data.category    || '',
+        landHolding: data.landHolding || '',
+        familySize:  data.familySize  || '',
+        occupation:  data.occupation  || '',
+      });
+    } catch {
+      setProfileError('Could not load profile. Please try again.');
+    } finally {
+      setProfileLoading(false);
+    }
+  };
+
+  const saveProfile = async (e) => {
+    e.preventDefault();
+    setProfileSaving(true);
+    setProfileError('');
+    setProfileSuccess('');
+    try {
+      const { data } = await auth.updateProfile(profileForm);
+      const updated = { ...user, name: data.user.name, email: data.user.email };
+      localStorage.setItem('user', JSON.stringify(updated));
+      setUser(updated);
+      setProfileSuccess('Profile updated successfully!');
+      setTimeout(() => setProfileSuccess(''), 3000);
+    } catch (err) {
+      setProfileError(err.response?.data?.message || 'Failed to save profile.');
+    } finally {
+      setProfileSaving(false);
+    }
+  };
+
   return (
     <div className="dashboard gov-portal" id="top">
 
@@ -178,6 +237,9 @@ function Dashboard({ user, setUser }) {
                       </>
                     ) : (
                       <>
+                        <button className="dropdown-item" onClick={openProfileEditor}>
+                          <FiEdit2 size={14} /> Edit My Profile
+                        </button>
                         <button className="dropdown-item" onClick={() => { navigate('/applications'); setShowProfileMenu(false); }}>
                           <FiClipboard size={14} /> My Applications
                         </button>
@@ -420,6 +482,138 @@ function Dashboard({ user, setUser }) {
 
         </div>
       </section>
+
+      {/* ===== CITIZEN PROFILE EDITOR MODAL ===== */}
+      {showProfileEditor && (
+        <div className="prof-overlay" onClick={() => setShowProfileEditor(false)}>
+          <div className="prof-modal" onClick={e => e.stopPropagation()}>
+
+            {/* Modal Header */}
+            <div className="prof-header">
+              <div className="prof-header-left">
+                <div className="prof-avatar-lg">{user?.name?.charAt(0).toUpperCase() || 'U'}</div>
+                <div>
+                  <h2>My Profile</h2>
+                  <p>Update your personal details</p>
+                </div>
+              </div>
+              <button className="prof-close" onClick={() => setShowProfileEditor(false)}>✕</button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="prof-body">
+              {profileLoading ? (
+                <div className="prof-loading">Loading your profile…</div>
+              ) : (
+                <form onSubmit={saveProfile}>
+                  {profileError   && <div className="prof-msg prof-msg-error">{profileError}</div>}
+                  {profileSuccess && <div className="prof-msg prof-msg-success">{profileSuccess}</div>}
+
+                  {/* Personal Info */}
+                  <div className="prof-section-title">Personal Information</div>
+                  <div className="prof-grid-2">
+                    <div className="prof-field">
+                      <label>Full Name *</label>
+                      <input type="text" value={profileForm.name} required
+                        onChange={e => setProfileForm({ ...profileForm, name: e.target.value })}
+                        placeholder="Your full name" />
+                    </div>
+                    <div className="prof-field">
+                      <label>Phone Number *</label>
+                      <input type="text" value={profileForm.phone} required maxLength={10}
+                        onChange={e => setProfileForm({ ...profileForm, phone: e.target.value })}
+                        placeholder="10-digit mobile number" />
+                    </div>
+                    <div className="prof-field">
+                      <label>Email Address</label>
+                      <input type="email" value={profileForm.email}
+                        onChange={e => setProfileForm({ ...profileForm, email: e.target.value })}
+                        placeholder="your@email.com (optional)" />
+                    </div>
+                    <div className="prof-field">
+                      <label>Occupation</label>
+                      <input type="text" value={profileForm.occupation}
+                        onChange={e => setProfileForm({ ...profileForm, occupation: e.target.value })}
+                        placeholder="e.g. Farmer, Teacher, Labour" />
+                    </div>
+                  </div>
+
+                  {/* Address */}
+                  <div className="prof-section-title">Address &amp; Location</div>
+                  <div className="prof-grid-2">
+                    <div className="prof-field prof-field-full">
+                      <label>Full Address</label>
+                      <input type="text" value={profileForm.address}
+                        onChange={e => setProfileForm({ ...profileForm, address: e.target.value })}
+                        placeholder="House No., Street, Village" />
+                    </div>
+                    <div className="prof-field">
+                      <label>Ward</label>
+                      <select value={profileForm.ward}
+                        onChange={e => setProfileForm({ ...profileForm, ward: e.target.value })}>
+                        <option value="">— Select Ward —</option>
+                        {['Ward 1','Ward 2','Ward 3','Ward 4','Ward 5','Ward 6','Ward 7','Ward 8','Ward 9','Ward 10'].map(w => (
+                          <option key={w} value={w}>{w}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="prof-field">
+                      <label>Aadhaar Number</label>
+                      <input type="text" value={profileForm.aadhar} maxLength={12}
+                        onChange={e => setProfileForm({ ...profileForm, aadhar: e.target.value })}
+                        placeholder="12-digit Aadhaar" />
+                    </div>
+                  </div>
+
+                  {/* Demographics & Finance */}
+                  <div className="prof-section-title">Demographics &amp; Financial Details</div>
+                  <div className="prof-grid-2">
+                    <div className="prof-field">
+                      <label>Social Category</label>
+                      <select value={profileForm.category}
+                        onChange={e => setProfileForm({ ...profileForm, category: e.target.value })}>
+                        <option value="">— Select Category —</option>
+                        {['General','OBC','SC','ST','EWS'].map(c => (
+                          <option key={c} value={c}>{c}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="prof-field">
+                      <label>Family Size</label>
+                      <input type="number" min={1} max={20} value={profileForm.familySize}
+                        onChange={e => setProfileForm({ ...profileForm, familySize: e.target.value })}
+                        placeholder="No. of family members" />
+                    </div>
+                    <div className="prof-field">
+                      <label>Annual Income (₹)</label>
+                      <input type="number" min={0} value={profileForm.income}
+                        onChange={e => setProfileForm({ ...profileForm, income: e.target.value })}
+                        placeholder="e.g. 120000" />
+                    </div>
+                    <div className="prof-field">
+                      <label>Land Holding (Acres)</label>
+                      <input type="number" min={0} step={0.1} value={profileForm.landHolding}
+                        onChange={e => setProfileForm({ ...profileForm, landHolding: e.target.value })}
+                        placeholder="e.g. 2.5" />
+                    </div>
+                  </div>
+
+                  <div className="prof-info-note">
+                    ℹ Your income, category, and land holding details are used for government scheme eligibility checks.
+                  </div>
+
+                  <div className="prof-actions">
+                    <button type="button" className="prof-btn-cancel" onClick={() => setShowProfileEditor(false)}>Cancel</button>
+                    <button type="submit" className="prof-btn-save" disabled={profileSaving}>
+                      <FiSave size={14} /> {profileSaving ? 'Saving…' : 'Save Profile'}
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

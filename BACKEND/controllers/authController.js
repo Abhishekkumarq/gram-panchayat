@@ -106,3 +106,29 @@ exports.getProfile = async (req, res) => {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
+
+exports.updateProfile = async (req, res) => {
+  try {
+    const allowed = ['name', 'phone', 'email', 'address', 'ward', 'aadhar', 'income', 'category', 'landHolding', 'familySize', 'occupation'];
+    const updates = {};
+    for (const key of allowed) {
+      if (req.body[key] !== undefined && req.body[key] !== '') {
+        updates[key] = req.body[key];
+      }
+    }
+
+    if (updates.phone) {
+      const existing = await User.findOne({ phone: updates.phone, _id: { $ne: req.user.id } });
+      if (existing) return res.status(400).json({ message: 'Phone number already in use by another account.' });
+    }
+    if (updates.email) {
+      const existing = await User.findOne({ email: updates.email, _id: { $ne: req.user.id } });
+      if (existing) return res.status(400).json({ message: 'Email already in use by another account.' });
+    }
+
+    const user = await User.findByIdAndUpdate(req.user.id, { $set: updates }, { new: true, runValidators: true }).select('-password');
+    res.json({ message: 'Profile updated successfully', user });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};

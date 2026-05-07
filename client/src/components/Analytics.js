@@ -361,22 +361,6 @@ export default function Analytics() {
         </ResponsiveContainer>
       </ChartCard>
 
-      {/* ── Row 5: Scheme Applications ── */}
-      <ChartCard title="Scheme Applications by Category">
-        <ResponsiveContainer width="100%" height={280}>
-          <BarChart data={schemeData} margin={{ left: -10 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#E0E8F5" />
-            <XAxis dataKey="category" tick={{ fontSize: 11 }} />
-            <YAxis tick={{ fontSize: 11 }} />
-            <Tooltip content={<CustomTooltip />} />
-            <Legend />
-            {schemeStatuses.map(s => (
-              <Bar key={s} dataKey={s} stackId="a" fill={STATUS_COLORS[s]} />
-            ))}
-          </BarChart>
-        </ResponsiveContainer>
-      </ChartCard>
-
       {/* ── Row 6: Births vs Deaths | Occupation Income ── */}
       <div className="an-grid-2">
         <ChartCard title="Births vs Deaths by Year">

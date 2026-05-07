@@ -8,6 +8,12 @@ let cache = null;
 let cacheTime = 0;
 const CACHE_TTL = 5 * 60 * 1000;
 
+// Capitalize first letter helper used in pipeline via JS post-processing
+function capitalize(s) {
+  if (!s) return 'Unknown';
+  return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+}
+
 router.get('/summary', authenticate, async (req, res) => {
   try {
     if (cache && Date.now() - cacheTime < CACHE_TTL) {
@@ -20,11 +26,12 @@ router.get('/summary', authenticate, async (req, res) => {
     const [
       genderData,
       ageData,
-      grievData,
-      priorityData,
+      grievDataRaw,
+      priorityDataRaw,
       fundData,
-      schemeData,
-      vitalData,
+      schemeDataRaw,
+      birthData,
+      deathData,
       houseData,
       propData,
       occData,
@@ -52,22 +59,31 @@ router.get('/summary', authenticate, async (req, res) => {
         { $project: { _id: 0, range: { $concat: [{ $toString: '$_id' }, '-', { $toString: { $add: ['$_id', 9] } }] }, count: 1 } }
       ]).toArray(),
 
-      // Grievances by category
+      // Grievances by category — use capitalized field names to match chart dataKeys
       db.collection('grievances').aggregate([
         { $group: {
           _id: '$complaint_category',
-          pending:    { $sum: { $cond: [{ $eq: [{ $toLower: '$status' }, 'pending'] }, 1, 0] } },
-          inprogress: { $sum: { $cond: [{ $eq: [{ $toLower: '$status' }, 'in progress'] }, 1, 0] } },
-          resolved:   { $sum: { $cond: [{ $eq: [{ $toLower: '$status' }, 'resolved'] }, 1, 0] } },
-          rejected:   { $sum: { $cond: [{ $eq: [{ $toLower: '$status' }, 'rejected'] }, 1, 0] } },
+          Pending:      { $sum: { $cond: [{ $in: [{ $toLower: '$status' }, ['pending']] }, 1, 0] } },
+          InProgress:   { $sum: { $cond: [{ $in: [{ $toLower: '$status' }, ['in progress', 'inprogress', 'in-progress']] }, 1, 0] } },
+          Resolved:     { $sum: { $cond: [{ $eq: [{ $toLower: '$status' }, 'resolved'] }, 1, 0] } },
+          Rejected:     { $sum: { $cond: [{ $eq: [{ $toLower: '$status' }, 'rejected'] }, 1, 0] } },
         }},
-        { $project: { _id: 0, category: '$_id', pending: 1, 'in progress': '$inprogress', resolved: 1, rejected: 1 } }
+        { $project: { _id: 0, category: '$_id', Pending: 1, 'In Progress': '$InProgress', Resolved: 1, Rejected: 1 } }
       ]).toArray(),
 
-      // Grievance priority
+      // Grievance priority — normalize to Title Case
       db.collection('grievances').aggregate([
         { $group: { _id: { $toLower: '$priority' }, value: { $sum: 1 } } },
-        { $project: { _id: 0, name: '$_id', value: 1 } }
+        { $project: { _id: 0, name: {
+          $switch: {
+            branches: [
+              { case: { $eq: ['$_id', 'high'] },   then: 'High' },
+              { case: { $eq: ['$_id', 'medium'] }, then: 'Medium' },
+              { case: { $eq: ['$_id', 'low'] },    then: 'Low' },
+            ],
+            default: '$_id'
+          }
+        }, value: 1 } }
       ]).toArray(),
 
       // Fund by department
@@ -80,25 +96,32 @@ router.get('/summary', authenticate, async (req, res) => {
         { $project: { _id: 0, department: '$_id', allocated: 1, used: 1 } }
       ]).toArray(),
 
-      // Scheme applications by category
+      // Scheme applications by category — capitalized keys to match chart
       db.collection('scheme_applications').aggregate([
         { $group: {
           _id: { $ifNull: ['$scheme_category', 'Other'] },
-          approved:     { $sum: { $cond: [{ $eq: [{ $toLower: '$status' }, 'approved'] }, 1, 0] } },
-          pending:      { $sum: { $cond: [{ $eq: [{ $toLower: '$status' }, 'pending'] }, 1, 0] } },
-          rejected:     { $sum: { $cond: [{ $eq: [{ $toLower: '$status' }, 'rejected'] }, 1, 0] } },
-          submitted:    { $sum: { $cond: [{ $eq: [{ $toLower: '$status' }, 'submitted'] }, 1, 0] } },
+          Approved:     { $sum: { $cond: [{ $eq: [{ $toLower: '$status' }, 'approved'] }, 1, 0] } },
+          Pending:      { $sum: { $cond: [{ $in: [{ $toLower: '$status' }, ['pending', 'submitted']] }, 1, 0] } },
+          UnderReview:  { $sum: { $cond: [{ $in: [{ $toLower: '$status' }, ['under-review', 'under review']] }, 1, 0] } },
+          Rejected:     { $sum: { $cond: [{ $eq: [{ $toLower: '$status' }, 'rejected'] }, 1, 0] } },
         }},
-        { $project: { _id: 0, category: '$_id', approved: 1, pending: 1, rejected: 1, submitted: 1 } }
+        { $project: { _id: 0, category: '$_id', Approved: 1, Pending: 1, 'Under Review': '$UnderReview', Rejected: 1 } }
       ]).toArray(),
 
-      // Births by year
-      db.collection('birth_certificates').aggregate([
-        { $match: { date_of_birth: { $exists: true } } },
-        { $project: { year: { $substr: ['$date_of_birth', 0, 4] } } },
-        { $group: { _id: '$year', births: { $sum: 1 } } },
+      // Births by year — from certificates collection (actual Mongoose data)
+      db.collection('certificates').aggregate([
+        { $match: { type: 'birth' } },
+        { $group: { _id: { $year: '$createdAt' }, births: { $sum: 1 } } },
         { $sort: { _id: 1 } },
-        { $project: { _id: 0, year: '$_id', births: 1, deaths: { $literal: 0 } } }
+        { $project: { _id: 0, year: { $toString: '$_id' }, births: 1 } }
+      ]).toArray(),
+
+      // Deaths by year — from certificates collection
+      db.collection('certificates').aggregate([
+        { $match: { type: 'death' } },
+        { $group: { _id: { $year: '$createdAt' }, deaths: { $sum: 1 } } },
+        { $sort: { _id: 1 } },
+        { $project: { _id: 0, year: { $toString: '$_id' }, deaths: 1 } }
       ]).toArray(),
 
       // House type
@@ -136,19 +159,45 @@ router.get('/summary', authenticate, async (req, res) => {
         }}
       ]).toArray(),
 
-      // Grievance KPI
-      db.collection('grievances').countDocuments({ status: 'Pending' }),
+      // Grievance KPI — open (pending/in-progress)
+      db.collection('grievances').countDocuments({
+        status: { $in: ['Pending', 'pending', 'In Progress', 'in progress'] }
+      }),
 
-      // Scheme KPI
+      // Scheme KPI — approved applications
       db.collection('scheme_applications').countDocuments({ status: 'approved' }),
 
       // Totals
       Promise.all([
         db.collection('citizens').estimatedDocumentCount(),
         db.collection('households').estimatedDocumentCount(),
-        db.collection('birth_certificates').estimatedDocumentCount(),
+        db.collection('certificates').countDocuments({ type: 'birth' }),
+        db.collection('certificates').countDocuments({ type: 'death' }),
       ])
     ]);
+
+    // Merge births + deaths into unified vitalData array
+    const vitalMap = {};
+    for (const b of birthData)  vitalMap[b.year] = { year: b.year, births: b.births, deaths: 0 };
+    for (const d of deathData) {
+      if (vitalMap[d.year]) vitalMap[d.year].deaths = d.deaths;
+      else vitalMap[d.year] = { year: d.year, births: 0, deaths: d.deaths };
+    }
+    const vitalData = Object.values(vitalMap).sort((a, b) => a.year.localeCompare(b.year));
+
+    // Fix grievData: ensure 'In Progress' key exists (some MongoDB versions drop the alias)
+    const grievData = grievDataRaw.map(row => ({
+      ...row,
+      'In Progress': row['In Progress'] || 0,
+    }));
+
+    // Fix schemeData: ensure all keys exist
+    const schemeData = schemeDataRaw.map(row => ({
+      ...row,
+      'Under Review': row['Under Review'] || 0,
+    }));
+
+    const priorityData = priorityDataRaw;
 
     const result = {
       kpis: {
@@ -159,7 +208,7 @@ router.get('/summary', authenticate, async (req, res) => {
         openGrievances:  grievKPI,
         approvedSchemes: schemeKPI,
         totalBirths:     totals[2],
-        totalDeaths:     0,
+        totalDeaths:     totals[3],
       },
       genderData,
       ageData,

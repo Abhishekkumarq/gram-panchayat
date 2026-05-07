@@ -3,147 +3,163 @@ const router = express.Router();
 const mongoose = require('mongoose');
 const { authenticate } = require('../middleware/authMiddleware');
 
-// GET /api/analytics/summary
+// Simple in-memory cache — recompute every 5 minutes
+let cache = null;
+let cacheTime = 0;
+const CACHE_TTL = 5 * 60 * 1000;
+
 router.get('/summary', authenticate, async (req, res) => {
   try {
+    if (cache && Date.now() - cacheTime < CACHE_TTL) {
+      return res.json(cache);
+    }
+
     const db = mongoose.connection.db;
 
-    const [citizens, households, taxes, grievances, schemes, funds, births, properties] =
-      await Promise.all([
-        db.collection('citizens').find({}).toArray(),
-        db.collection('households').find({}).toArray(),
-        db.collection('tax_records').find({}).toArray(),
-        db.collection('grievances').find({}).toArray(),
-        db.collection('scheme_applications').find({}).toArray(),
-        db.collection('funds').find({}).toArray(),
-        db.collection('birth_certificates').find({}).toArray(),
-        db.collection('properties').find({}).toArray(),
-      ]);
+    // Run all aggregations in parallel
+    const [
+      genderData,
+      ageData,
+      grievData,
+      priorityData,
+      fundData,
+      schemeData,
+      vitalData,
+      houseData,
+      propData,
+      occData,
+      taxKPI,
+      grievKPI,
+      schemeKPI,
+      totals,
+    ] = await Promise.all([
 
-    // Normalize status to lowercase for consistent comparison
-    schemes.forEach(s => { if (s.status) s.status = s.status.toLowerCase(); });
-    grievances.forEach(g => { if (g.status) g.status = g.status.toLowerCase(); });
+      // Gender distribution
+      db.collection('citizens').aggregate([
+        { $group: { _id: '$gender', value: { $sum: 1 } } },
+        { $project: { _id: 0, name: '$_id', value: 1 } }
+      ]).toArray(),
 
-    // ── KPIs ──
-    const taxCollected = taxes
-      .filter(t => t.payment_status === 'Paid')
-      .reduce((s, t) => s + parseFloat(t.amount_paid || 0), 0);
-    const taxPending = taxes
-      .filter(t => t.payment_status === 'Pending')
-      .reduce((s, t) => s + parseFloat(t.amount_due || 0), 0);
-    const openGrievances  = grievances.filter(g => g.status === 'pending').length;
-    const approvedSchemes = schemes.filter(s => s.status === 'approved').length;
+      // Age buckets
+      db.collection('citizens').aggregate([
+        { $match: { age: { $exists: true } } },
+        { $bucket: {
+          groupBy: { $toInt: '$age' },
+          boundaries: [0,10,20,30,40,50,60,70,80,90,100],
+          default: '90+',
+          output: { count: { $sum: 1 } }
+        }},
+        { $project: { _id: 0, range: { $concat: [{ $toString: '$_id' }, '-', { $toString: { $add: ['$_id', 9] } }] }, count: 1 } }
+      ]).toArray(),
 
-    // ── Gender distribution ──
-    const genderMap = {};
-    citizens.forEach(c => {
-      const g = c.gender || 'Unknown';
-      genderMap[g] = (genderMap[g] || 0) + 1;
-    });
-    const genderData = Object.entries(genderMap).map(([name, value]) => ({ name, value }));
+      // Grievances by category
+      db.collection('grievances').aggregate([
+        { $group: {
+          _id: '$complaint_category',
+          pending:    { $sum: { $cond: [{ $eq: [{ $toLower: '$status' }, 'pending'] }, 1, 0] } },
+          inprogress: { $sum: { $cond: [{ $eq: [{ $toLower: '$status' }, 'in progress'] }, 1, 0] } },
+          resolved:   { $sum: { $cond: [{ $eq: [{ $toLower: '$status' }, 'resolved'] }, 1, 0] } },
+          rejected:   { $sum: { $cond: [{ $eq: [{ $toLower: '$status' }, 'rejected'] }, 1, 0] } },
+        }},
+        { $project: { _id: 0, category: '$_id', pending: 1, 'in progress': '$inprogress', resolved: 1, rejected: 1 } }
+      ]).toArray(),
 
-    // ── Age distribution ──
-    const ageBuckets = {};
-    citizens.forEach(c => {
-      const age = parseInt(c.age || 0);
-      const bucket = `${Math.floor(age / 10) * 10}-${Math.floor(age / 10) * 10 + 9}`;
-      ageBuckets[bucket] = (ageBuckets[bucket] || 0) + 1;
-    });
-    const ageData = Object.entries(ageBuckets)
-      .sort((a, b) => parseInt(a[0]) - parseInt(b[0]))
-      .map(([range, count]) => ({ range, count }));
+      // Grievance priority
+      db.collection('grievances').aggregate([
+        { $group: { _id: { $toLower: '$priority' }, value: { $sum: 1 } } },
+        { $project: { _id: 0, name: '$_id', value: 1 } }
+      ]).toArray(),
 
-    // ── Grievances by category ──
-    const grievMap = {};
-    grievances.forEach(g => {
-      const key = g.complaint_category || g.category || 'Other';
-      if (!grievMap[key]) grievMap[key] = { category: key, pending: 0, 'in progress': 0, resolved: 0, rejected: 0 };
-      const st = (g.status || 'pending').toLowerCase();
-      grievMap[key][st] = (grievMap[key][st] || 0) + 1;
-    });
-    const grievData = Object.values(grievMap);
+      // Fund by department
+      db.collection('funds').aggregate([
+        { $group: {
+          _id: { $ifNull: ['$department', '$category'] },
+          allocated: { $sum: { $toDouble: { $ifNull: ['$fund_allocated', '$allocated', 0] } } },
+          used:      { $sum: { $toDouble: { $ifNull: ['$fund_used', '$spent', 0] } } }
+        }},
+        { $project: { _id: 0, department: '$_id', allocated: 1, used: 1 } }
+      ]).toArray(),
 
-    // ── Grievance priority ──
-    const priorityMap = {};
-    grievances.forEach(g => {
-      const p = (g.priority || 'medium').toLowerCase();
-      priorityMap[p] = (priorityMap[p] || 0) + 1;
-    });
-    const priorityData = Object.entries(priorityMap).map(([name, value]) => ({ name, value }));
+      // Scheme applications by category
+      db.collection('scheme_applications').aggregate([
+        { $group: {
+          _id: { $ifNull: ['$scheme_category', 'Other'] },
+          approved:     { $sum: { $cond: [{ $eq: [{ $toLower: '$status' }, 'approved'] }, 1, 0] } },
+          pending:      { $sum: { $cond: [{ $eq: [{ $toLower: '$status' }, 'pending'] }, 1, 0] } },
+          rejected:     { $sum: { $cond: [{ $eq: [{ $toLower: '$status' }, 'rejected'] }, 1, 0] } },
+          submitted:    { $sum: { $cond: [{ $eq: [{ $toLower: '$status' }, 'submitted'] }, 1, 0] } },
+        }},
+        { $project: { _id: 0, category: '$_id', approved: 1, pending: 1, rejected: 1, submitted: 1 } }
+      ]).toArray(),
 
-    // ── Fund allocation by department ──
-    const fundMap = {};
-    funds.forEach(f => {
-      const dept = f.department || f.category || 'Other';
-      if (!fundMap[dept]) fundMap[dept] = { department: dept, allocated: 0, used: 0 };
-      fundMap[dept].allocated += parseFloat(f.fund_allocated || f.allocated || 0);
-      fundMap[dept].used      += parseFloat(f.fund_used || f.spent || 0);
-    });
-    const fundData = Object.values(fundMap);
+      // Births by year
+      db.collection('birth_certificates').aggregate([
+        { $match: { date_of_birth: { $exists: true } } },
+        { $project: { year: { $substr: ['$date_of_birth', 0, 4] } } },
+        { $group: { _id: '$year', births: { $sum: 1 } } },
+        { $sort: { _id: 1 } },
+        { $project: { _id: 0, year: '$_id', births: 1, deaths: { $literal: 0 } } }
+      ]).toArray(),
 
-    // ── Scheme applications by category ──
-    const schemeMap = {};
-    schemes.forEach(s => {
-      const key = s.scheme_category || s.schemeId || 'Other';
-      if (!schemeMap[key]) schemeMap[key] = { category: key, approved: 0, pending: 0, rejected: 0, submitted: 0 };
-      const st = (s.status || 'pending').toLowerCase();
-      schemeMap[key][st] = (schemeMap[key][st] || 0) + 1;
-    });
-    const schemeData = Object.values(schemeMap);
+      // House type
+      db.collection('households').aggregate([
+        { $group: { _id: { $ifNull: ['$house_type', 'Other'] }, value: { $sum: 1 } } },
+        { $project: { _id: 0, name: '$_id', value: 1 } }
+      ]).toArray(),
 
-    // ── Births by year ──
-    const vitalMap = {};
-    births.forEach(b => {
-      const raw = b.date_of_birth || b.dateOfBirth || '';
-      const year = raw ? raw.toString().split('-')[0] : null;
-      if (year && year.length === 4) {
-        if (!vitalMap[year]) vitalMap[year] = { year, births: 0, deaths: 0 };
-        vitalMap[year].births++;
-      }
-    });
-    const vitalData = Object.values(vitalMap).sort((a, b) => a.year - b.year);
+      // Property value by land type
+      db.collection('properties').aggregate([
+        { $group: {
+          _id: { $ifNull: ['$land_type', 'Other'] },
+          value: { $sum: { $toDouble: { $ifNull: ['$estimated_value', 0] } } }
+        }},
+        { $project: { _id: 0, type: '$_id', value: 1 } }
+      ]).toArray(),
 
-    // ── House type ──
-    const houseMap = {};
-    households.forEach(h => {
-      const ht = h.house_type || h.houseType || 'Other';
-      houseMap[ht] = (houseMap[ht] || 0) + 1;
-    });
-    const houseData = Object.entries(houseMap).map(([name, value]) => ({ name, value }));
+      // Occupation avg income (top 8)
+      db.collection('citizens').aggregate([
+        { $group: {
+          _id: { $ifNull: ['$occupation', 'Other'] },
+          avgIncome: { $avg: { $toDouble: { $ifNull: ['$income', '$annual_income', 0] } } },
+        }},
+        { $sort: { avgIncome: -1 } },
+        { $limit: 8 },
+        { $project: { _id: 0, name: '$_id', avgIncome: { $round: ['$avgIncome', 0] } } }
+      ]).toArray(),
 
-    // ── Property value by land type ──
-    const propMap = {};
-    properties.forEach(p => {
-      const lt = p.land_type || p.landType || 'Other';
-      if (!propMap[lt]) propMap[lt] = { type: lt, value: 0 };
-      propMap[lt].value += parseFloat(p.estimated_value || p.estimatedValue || 0);
-    });
-    const propData = Object.values(propMap);
+      // Tax KPIs
+      db.collection('tax_records').aggregate([
+        { $group: {
+          _id: null,
+          collected: { $sum: { $cond: [{ $eq: ['$payment_status', 'Paid'] }, { $toDouble: { $ifNull: ['$amount_paid', 0] } }, 0] } },
+          pending:   { $sum: { $cond: [{ $eq: ['$payment_status', 'Pending'] }, { $toDouble: { $ifNull: ['$amount_due', 0] } }, 0] } },
+        }}
+      ]).toArray(),
 
-    // ── Occupation avg income (top 8) ──
-    const occMap = {};
-    citizens.forEach(c => {
-      const occ = c.occupation || 'Other';
-      const inc = parseFloat(c.income || c.annual_income || 0);
-      if (!occMap[occ]) occMap[occ] = { total: 0, count: 0 };
-      occMap[occ].total += inc;
-      occMap[occ].count++;
-    });
-    const occData = Object.entries(occMap)
-      .map(([name, d]) => ({ name, avgIncome: Math.round(d.total / d.count) }))
-      .sort((a, b) => b.avgIncome - a.avgIncome)
-      .slice(0, 8);
+      // Grievance KPI
+      db.collection('grievances').countDocuments({ status: 'Pending' }),
 
-    res.json({
+      // Scheme KPI
+      db.collection('scheme_applications').countDocuments({ status: 'approved' }),
+
+      // Totals
+      Promise.all([
+        db.collection('citizens').estimatedDocumentCount(),
+        db.collection('households').estimatedDocumentCount(),
+        db.collection('birth_certificates').estimatedDocumentCount(),
+      ])
+    ]);
+
+    const result = {
       kpis: {
-        totalCitizens:    citizens.length,
-        totalHouseholds:  households.length,
-        taxCollected,
-        taxPending,
-        openGrievances,
-        approvedSchemes,
-        totalBirths:      births.length,
-        totalDeaths:      0,
+        totalCitizens:   totals[0],
+        totalHouseholds: totals[1],
+        taxCollected:    taxKPI[0]?.collected || 0,
+        taxPending:      taxKPI[0]?.pending   || 0,
+        openGrievances:  grievKPI,
+        approvedSchemes: schemeKPI,
+        totalBirths:     totals[2],
+        totalDeaths:     0,
       },
       genderData,
       ageData,
@@ -155,7 +171,11 @@ router.get('/summary', authenticate, async (req, res) => {
       houseData,
       propData,
       occData,
-    });
+    };
+
+    cache = result;
+    cacheTime = Date.now();
+    res.json(result);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

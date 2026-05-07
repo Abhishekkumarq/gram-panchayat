@@ -138,10 +138,26 @@ function AdminDashboard() {
 
   if (loading && !stats.citizens) {
     return (
-      <div className="admin-page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
-        <div style={{ textAlign: 'center' }}>
-          <p style={{ fontSize: 16, color: '#003087' }}>Loading dashboard data…</p>
+      <div className="admin-page">
+        <header className="admin-header" style={{ opacity: 0.7 }}>
+          <div className="admin-header-left">
+            <div className="admin-header-title">Admin Control Panel</div>
+            <div className="admin-header-sub">Gram Panchayat E-Governance Portal</div>
+          </div>
+        </header>
+        <div style={{ padding: '2rem', maxWidth: 1100, margin: '0 auto' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(180px,1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+            {[...Array(11)].map((_, i) => (
+              <div key={i} style={{ height: 90, borderRadius: 6, background: 'linear-gradient(90deg,#e8eef5 25%,#f5f7fa 50%,#e8eef5 75%)', backgroundSize: '800px 100%', animation: 'skeletonShimmer 1.4s infinite linear' }} />
+            ))}
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            {[1,2].map(i => (
+              <div key={i} style={{ height: 180, borderRadius: 6, background: 'linear-gradient(90deg,#e8eef5 25%,#f5f7fa 50%,#e8eef5 75%)', backgroundSize: '800px 100%', animation: 'skeletonShimmer 1.4s infinite linear' }} />
+            ))}
+          </div>
         </div>
+        <style>{`@keyframes skeletonShimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}`}</style>
       </div>
     );
   }

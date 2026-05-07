@@ -224,7 +224,16 @@ export default function Analytics() {
       .catch(e => { setError(e.response?.data?.error || 'Failed to load analytics data'); setLoading(false); });
   }, []);
 
-  if (loading) return <div className="an-loading">Loading analytics…</div>;
+  if (loading) return (
+    <div className="an-skeleton-wrap">
+      <div className="an-skeleton-kpis">
+        {[1,2,3,4,5,6,7,8].map(i => <div key={i} className="an-skeleton-kpi skeleton" />)}
+      </div>
+      <div className="an-skeleton-charts">
+        {[1,2,3,4,5,6].map(i => <div key={i} className="an-skeleton-chart skeleton" />)}
+      </div>
+    </div>
+  );
   if (error)   return <div className="an-error">⚠ {error}</div>;
   if (!data)   return null;
 

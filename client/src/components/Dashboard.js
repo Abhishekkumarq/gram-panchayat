@@ -356,7 +356,7 @@ function Dashboard({ user, setUser }) {
       <section className="services-section">
         <div className="services-inner">
           <div className="section-title-block">
-            <h2 className="section-main-title">{t('onlineServices')} | {t('onlineServicesHindi')}</h2>
+            <h2 className="section-main-title">{t('onlineServices')}</h2>
             <p className="section-sub-title">{t('onlineServicesDesc')}</p>
           </div>
 

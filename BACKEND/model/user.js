@@ -13,6 +13,11 @@ const userSchema = new mongoose.Schema({
   category: { type: String, enum: ['General', 'OBC', 'SC', 'ST', 'EWS'] },
   landHolding: { type: Number },
   familySize: { type: Number },
+  familyMembers: [{
+    name:   { type: String },
+    age:    { type: Number },
+    aadhar: { type: String }
+  }],
   createdAt: { type: Date, default: Date.now }
 });
 

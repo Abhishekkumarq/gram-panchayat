@@ -111,7 +111,7 @@ exports.getProfile = async (req, res) => {
 
 exports.updateProfile = async (req, res) => {
   try {
-    const allowed = ['name', 'phone', 'email', 'address', 'ward', 'aadhar', 'income', 'category', 'landHolding', 'familySize', 'occupation'];
+    const allowed = ['name', 'phone', 'email', 'address', 'ward', 'aadhar', 'income', 'category', 'landHolding', 'familySize', 'occupation', 'familyMembers'];
     const updates = {};
     for (const key of allowed) {
       if (req.body[key] !== undefined && req.body[key] !== '') {

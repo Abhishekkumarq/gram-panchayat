@@ -1485,3 +1485,28 @@
   .prof-field-full { grid-column: 1; }
   .prof-modal { max-height: 100vh; border-radius: 0; }
 }
+
+/* ── Family Members ── */
+.prof-family-block {
+  border: 1px solid #dce4f0;
+  border-radius: 4px;
+  padding: 0.875rem 1rem;
+  margin-bottom: 0.75rem;
+  background: #f7f9fc;
+}
+.prof-family-index {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #003087;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-bottom: 0.625rem;
+}
+.prof-grid-3 {
+  display: grid;
+  grid-template-columns: 2fr 1fr 2fr;
+  gap: 0.75rem;
+}
+@media (max-width: 520px) {
+  .prof-grid-3 { grid-template-columns: 1fr; }
+}

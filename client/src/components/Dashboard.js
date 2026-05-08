@@ -24,7 +24,8 @@ function Dashboard({ user, setUser }) {
   const [showProfileEditor, setShowProfileEditor] = useState(false);
   const [profileForm, setProfileForm] = useState({
     name: '', phone: '', email: '', address: '', ward: '',
-    aadhar: '', income: '', category: '', landHolding: '', familySize: '', occupation: ''
+    aadhar: '', income: '', category: '', landHolding: '', familySize: '', occupation: '',
+    familyMembers: []
   });
   const [profileLoading, setProfileLoading] = useState(false);
   const [profileSaving, setProfileSaving] = useState(false);
@@ -135,12 +136,32 @@ function Dashboard({ user, setUser }) {
         landHolding: data.landHolding || '',
         familySize:  data.familySize  || '',
         occupation:  data.occupation  || '',
+        familyMembers: data.familyMembers || [],
       });
     } catch {
       setProfileError('Could not load profile. Please try again.');
     } finally {
       setProfileLoading(false);
     }
+  };
+
+  const handleFamilySizeChange = (val) => {
+    const size = Math.min(parseInt(val) || 0, 20);
+    const current = profileForm.familyMembers || [];
+    let members;
+    if (size > current.length) {
+      members = [...current, ...Array(size - current.length).fill(null).map(() => ({ name: '', age: '', aadhar: '' }))];
+    } else {
+      members = current.slice(0, size);
+    }
+    setProfileForm({ ...profileForm, familySize: val, familyMembers: members });
+  };
+
+  const updateMember = (idx, field, val) => {
+    const updated = profileForm.familyMembers.map((m, i) =>
+      i === idx ? { ...m, [field]: field === 'aadhar' ? val.replace(/\D/g, '').slice(0, 12) : val } : m
+    );
+    setProfileForm({ ...profileForm, familyMembers: updated });
   };
 
   const saveProfile = async (e) => {
@@ -581,7 +602,7 @@ function Dashboard({ user, setUser }) {
                     <div className="prof-field">
                       <label>Family Size</label>
                       <input type="number" min={1} max={20} value={profileForm.familySize}
-                        onChange={e => setProfileForm({ ...profileForm, familySize: e.target.value })}
+                        onChange={e => handleFamilySizeChange(e.target.value)}
                         placeholder="No. of family members" />
                     </div>
                     <div className="prof-field">
@@ -597,6 +618,38 @@ function Dashboard({ user, setUser }) {
                         placeholder="e.g. 2.5" />
                     </div>
                   </div>
+
+                  {/* Dynamic Family Members */}
+                  {profileForm.familyMembers.length > 0 && (
+                    <>
+                      <div className="prof-section-title">Family Member Details</div>
+                      {profileForm.familyMembers.map((member, idx) => (
+                        <div key={idx} className="prof-family-block">
+                          <div className="prof-family-index">Member {idx + 1}</div>
+                          <div className="prof-grid-3">
+                            <div className="prof-field">
+                              <label>Full Name</label>
+                              <input type="text" value={member.name}
+                                placeholder="Full name"
+                                onChange={e => updateMember(idx, 'name', e.target.value)} />
+                            </div>
+                            <div className="prof-field">
+                              <label>Age</label>
+                              <input type="number" min={0} max={120} value={member.age}
+                                placeholder="Age"
+                                onChange={e => updateMember(idx, 'age', e.target.value)} />
+                            </div>
+                            <div className="prof-field">
+                              <label>Aadhaar Number</label>
+                              <input type="text" maxLength={12} value={member.aadhar}
+                                placeholder="12-digit Aadhaar"
+                                onChange={e => updateMember(idx, 'aadhar', e.target.value)} />
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </>
+                  )}
 
                   <div className="prof-info-note">
                     ℹ Your income, category, and land holding details are used for government scheme eligibility checks.

@@ -25,13 +25,15 @@ exports.register = async (req, res) => {
 
     await user.save();
 
-    await notify(user._id, {
-      title: 'Welcome to Gram Panchayat E-Governance Portal',
-      message: `Welcome, ${name}! Your citizen account has been created. You can now apply for certificates, pay taxes, register grievances, and explore government schemes.`,
-      type: 'general',
-      actionUrl: '/dashboard',
-      priority: 'medium'
-    });
+    try {
+      await notify(user._id, {
+        title: 'Welcome to Gram Panchayat E-Governance Portal',
+        message: `Welcome, ${name}! Your citizen account has been created. You can now apply for certificates, pay taxes, register grievances, and explore government schemes.`,
+        type: 'general',
+        actionUrl: '/dashboard',
+        priority: 'medium'
+      });
+    } catch (e) { /* non-critical — registration still succeeds */ }
 
     res.status(201).json({ message: 'User registered successfully' });
   } catch (error) {

@@ -346,64 +346,6 @@ export default function Analytics() {
         </ChartCard>
       </div>
 
-      {/* ── Row 4: Fund Allocation ── */}
-      <ChartCard title="Fund Allocation vs Used by Department (₹)">
-        <ResponsiveContainer width="100%" height={280}>
-          <BarChart data={fundData} margin={{ left: 10 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#E0E8F5" />
-            <XAxis dataKey="department" tick={{ fontSize: 11 }} />
-            <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `₹${(v/100000).toFixed(0)}L`} />
-            <Tooltip content={<CustomTooltip />} formatter={v => `₹${fmt(v)}`} />
-            <Legend />
-            <Bar dataKey="allocated" name="Allocated" fill={COLORS.navy}  radius={[3,3,0,0]} />
-            <Bar dataKey="used"      name="Used"      fill={COLORS.green} radius={[3,3,0,0]} />
-          </BarChart>
-        </ResponsiveContainer>
-      </ChartCard>
-
-      {/* ── Row 6: Births vs Deaths | Occupation Income ── */}
-      <div className="an-grid-2">
-        <ChartCard title="Births vs Deaths by Year">
-          <ResponsiveContainer width="100%" height={260}>
-            <LineChart data={vitalData} margin={{ left: -10 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#E0E8F5" />
-              <XAxis dataKey="year" tick={{ fontSize: 11 }} />
-              <YAxis tick={{ fontSize: 11 }} />
-              <Tooltip content={<CustomTooltip />} />
-              <Legend />
-              <Line type="monotone" dataKey="births" name="Births" stroke={COLORS.green} strokeWidth={2} dot={{ r: 4 }} />
-              <Line type="monotone" dataKey="deaths" name="Deaths" stroke={COLORS.red}   strokeWidth={2} dot={{ r: 4 }} />
-            </LineChart>
-          </ResponsiveContainer>
-        </ChartCard>
-
-        <ChartCard title="Avg Income by Occupation (₹)">
-          <ResponsiveContainer width="100%" height={260}>
-            <BarChart data={occData} layout="vertical" margin={{ left: 60, right: 10 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#E0E8F5" horizontal={false} />
-              <XAxis type="number" tick={{ fontSize: 10 }} tickFormatter={v => `₹${(v/1000).toFixed(0)}K`} />
-              <YAxis type="category" dataKey="name" tick={{ fontSize: 11 }} width={60} />
-              <Tooltip content={<CustomTooltip />} formatter={v => `₹${fmt(v)}`} />
-              <Bar dataKey="avgIncome" name="Avg Income" fill={COLORS.saffron} radius={[0,3,3,0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </ChartCard>
-      </div>
-
-      {/* ── Row 7: Property Value ── */}
-      <ChartCard title="Property Estimated Value by Land Type (₹)">
-        <ResponsiveContainer width="100%" height={260}>
-          <BarChart data={propData} margin={{ left: 20 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#E0E8F5" />
-            <XAxis dataKey="type" tick={{ fontSize: 11 }} />
-            <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `₹${(v/10000000).toFixed(1)}Cr`} />
-            <Tooltip content={<CustomTooltip />} formatter={v => `₹${fmt(v)}`} />
-            <Bar dataKey="value" name="Estimated Value" radius={[3,3,0,0]}>
-              {propData.map((_, i) => <Cell key={i} fill={PIE_PALETTE[i % PIE_PALETTE.length]} />)}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
-      </ChartCard>
 
     </div>
   );
